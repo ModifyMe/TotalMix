@@ -46,7 +46,10 @@ class TotalMixController:
     """Controls TotalMix volume via OSC protocol."""
     
     # OSC addresses for TotalMix
-    MASTER_VOLUME = "/1/mastervolume"
+    # TotalMix uses a bus-based system - you need to select the bus first
+    BUS_OUTPUT = "/1/busOutput"      # Select output bus (1.0 to activate)
+    VOLUME_1 = "/1/volume1"          # First fader of selected bus (main out)
+    MASTER_VOLUME = "/1/mastervolume"  # Alternative: direct master volume
     MASTER_MUTE = "/1/mainMute"
     MAIN_DIM = "/1/mainDim"
     
@@ -61,7 +64,7 @@ class TotalMixController:
         
         Args:
             ip: IP address of the computer running TotalMix
-            port: OSC port (default 7001, configurable in TotalMix)
+            port: OSC port (default 7009, configurable in TotalMix)
             step: Volume step size (0.02 = roughly 1dB)
         """
         self.ip = ip
@@ -75,11 +78,25 @@ class TotalMixController:
         self.client = udp_client.SimpleUDPClient(ip, port)
         print(f"✓ Connected to TotalMix at {ip}:{port}")
         
+        # Select the output bus on startup
+        self._select_output_bus()
+        
+    def _select_output_bus(self) -> None:
+        """Select the output bus so volume commands work on main output."""
+        self.client.send_message(self.BUS_OUTPUT, 1.0)
+        print("✓ Output bus selected")
+        
     def set_volume(self, value: float) -> None:
         """Set master volume to specific value (0.0 to 1.0)."""
         value = max(self.MIN_VOLUME, min(self.MAX_VOLUME, value))
         self.current_volume = value
-        self.client.send_message(self.MASTER_VOLUME, value)
+        
+        # Send to both addresses for maximum compatibility
+        # First ensure output bus is selected, then send volume
+        self.client.send_message(self.BUS_OUTPUT, 1.0)
+        self.client.send_message(self.VOLUME_1, float(value))
+        # Also try the direct master volume address
+        self.client.send_message(self.MASTER_VOLUME, float(value))
         
         # Convert to approximate dB for display
         if value <= 0:
