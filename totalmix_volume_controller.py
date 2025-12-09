@@ -58,36 +58,70 @@ class TotalMixController:
     MIN_VOLUME = 0.0
     MAX_VOLUME = 1.0
     
-    def __init__(self, ip: str, port: int = 7001, step: float = 0.02, fader: int = 4):
+    def __init__(self, ip: str, port: int = 7001, receive_port: int = 9001, 
+                 step: float = 0.02, fader: int = 4):
         """
         Initialize the TotalMix controller.
         
         Args:
             ip: IP address of the computer running TotalMix
-            port: OSC port (default 7009, configurable in TotalMix)
+            port: OSC port to SEND to (TotalMix 'Port incoming', default 7001)
+            receive_port: OSC port to RECEIVE on (TotalMix 'Port outgoing', default 9001)
             step: Volume step size (0.02 = roughly 1dB)
         """
         self.ip = ip
         self.port = port
+        self.receive_port = receive_port
         self.step = step
         self.current_volume = 0.5  # Start at middle, will be updated
         self.is_muted = False
         self.running = True
         self.fader = fader
         self.volume_address = f"/1/volume{fader}"
+        self.received_feedback = False
         
         # Create OSC client (note: UDP is connectionless, no actual connection is made)
         self.client = udp_client.SimpleUDPClient(ip, port)
-        print(f"→ Sending OSC to {ip}:{port} (UDP - no connection verification)")
+        print(f"→ Sending OSC to {ip}:{port}")
+        print(f"→ Listening for feedback on port {receive_port}")
         print(f"→ Controlling fader {fader} (address: {self.volume_address})")
+        
+        # Start listener thread for feedback from TotalMix
+        self._start_listener()
         
         # Select the output bus on startup
         self._select_output_bus()
         
+    def _handle_osc_feedback(self, address: str, *args) -> None:
+        """Handle incoming OSC messages from TotalMix."""
+        if not self.received_feedback:
+            self.received_feedback = True
+            print("\n✓ Received feedback from TotalMix - connection verified!")
+        
+        # Update our volume if TotalMix sends it
+        if address == self.volume_address and args:
+            self.current_volume = float(args[0])
+            
+    def _start_listener(self) -> None:
+        """Start background thread to listen for OSC feedback."""
+        def listener_thread():
+            try:
+                dispatcher = Dispatcher()
+                dispatcher.set_default_handler(self._handle_osc_feedback)
+                server = BlockingOSCUDPServer(("0.0.0.0", self.receive_port), dispatcher)
+                print(f"✓ Listening on port {self.receive_port}")
+                server.serve_forever()
+            except OSError as e:
+                print(f"⚠ Could not listen on port {self.receive_port}: {e}")
+        
+        thread = threading.Thread(target=listener_thread, daemon=True)
+        thread.start()
+        time.sleep(0.2)  # Give listener time to start
+        
     def _select_output_bus(self) -> None:
         """Select the output bus so volume commands work on main output."""
         self.client.send_message(self.BUS_OUTPUT, 1.0)
-        print("✓ Output bus selected")
+        print("→ Sent bus selection command")
         
     def set_volume(self, value: float) -> None:
         """Set master volume to specific value (0.0 to 1.0)."""
