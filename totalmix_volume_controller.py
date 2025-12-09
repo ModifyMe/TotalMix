@@ -1,0 +1,211 @@
+#!/usr/bin/env python3
+"""
+TotalMix Volume Controller
+==========================
+Control RME TotalMix main output volume via OSC from another computer.
+
+Usage:
+    python totalmix_volume_controller.py --ip <TOTALMIX_IP> [--port <PORT>]
+    
+Hotkeys:
+    Ctrl + Shift + Up    : Volume Up
+    Ctrl + Shift + Down  : Volume Down
+    Ctrl + Shift + M     : Mute/Unmute
+    Ctrl + Shift + 0     : Set to 0dB (unity gain)
+    Ctrl + Shift + Q     : Quit
+
+Requirements:
+    pip install python-osc keyboard
+"""
+
+import argparse
+import sys
+import threading
+import time
+from typing import Optional
+
+try:
+    from pythonosc import udp_client
+    from pythonosc.dispatcher import Dispatcher
+    from pythonosc.osc_server import BlockingOSCUDPServer
+except ImportError:
+    print("Error: python-osc library not found.")
+    print("Install it with: pip install python-osc")
+    sys.exit(1)
+
+try:
+    import keyboard
+except ImportError:
+    print("Error: keyboard library not found.")
+    print("Install it with: pip install keyboard")
+    print("Note: On Windows, run as Administrator for global hotkeys.")
+    sys.exit(1)
+
+
+class TotalMixController:
+    """Controls TotalMix volume via OSC protocol."""
+    
+    # OSC addresses for TotalMix
+    MASTER_VOLUME = "/1/mastervolume"
+    MASTER_MUTE = "/1/mainMute"
+    MAIN_DIM = "/1/mainDim"
+    
+    # Volume values
+    UNITY_GAIN = 0.7197  # Approximately 0dB in TotalMix (varies by interface)
+    MIN_VOLUME = 0.0
+    MAX_VOLUME = 1.0
+    
+    def __init__(self, ip: str, port: int = 7001, step: float = 0.02):
+        """
+        Initialize the TotalMix controller.
+        
+        Args:
+            ip: IP address of the computer running TotalMix
+            port: OSC port (default 7001, configurable in TotalMix)
+            step: Volume step size (0.02 = roughly 1dB)
+        """
+        self.ip = ip
+        self.port = port
+        self.step = step
+        self.current_volume = 0.5  # Start at middle, will be updated
+        self.is_muted = False
+        self.running = True
+        
+        # Create OSC client
+        self.client = udp_client.SimpleUDPClient(ip, port)
+        print(f"✓ Connected to TotalMix at {ip}:{port}")
+        
+    def set_volume(self, value: float) -> None:
+        """Set master volume to specific value (0.0 to 1.0)."""
+        value = max(self.MIN_VOLUME, min(self.MAX_VOLUME, value))
+        self.current_volume = value
+        self.client.send_message(self.MASTER_VOLUME, value)
+        
+        # Convert to approximate dB for display
+        if value <= 0:
+            db_str = "-∞ dB"
+        else:
+            # Rough approximation: 0.7197 ≈ 0dB, logarithmic scale
+            db = 20 * (value - self.UNITY_GAIN) / self.UNITY_GAIN * 3
+            db_str = f"{db:+.1f} dB"
+        
+        bar_length = int(value * 30)
+        bar = "█" * bar_length + "░" * (30 - bar_length)
+        print(f"\r🔊 Volume: [{bar}] {value:.1%} (~{db_str})  ", end="", flush=True)
+        
+    def volume_up(self) -> None:
+        """Increase volume by one step."""
+        self.set_volume(self.current_volume + self.step)
+        
+    def volume_down(self) -> None:
+        """Decrease volume by one step."""
+        self.set_volume(self.current_volume - self.step)
+        
+    def toggle_mute(self) -> None:
+        """Toggle mute on/off."""
+        self.is_muted = not self.is_muted
+        self.client.send_message(self.MASTER_MUTE, 1.0 if self.is_muted else 0.0)
+        status = "🔇 MUTED" if self.is_muted else "🔊 UNMUTED"
+        print(f"\r{status}                                          ", end="", flush=True)
+        
+    def set_unity_gain(self) -> None:
+        """Set volume to 0dB (unity gain)."""
+        self.set_volume(self.UNITY_GAIN)
+        print(" [0dB]", end="", flush=True)
+        
+    def stop(self) -> None:
+        """Stop the controller."""
+        self.running = False
+
+
+def print_banner():
+    """Print startup banner."""
+    print("""
+╔══════════════════════════════════════════════════════════════╗
+║             TotalMix Remote Volume Controller                ║
+╠══════════════════════════════════════════════════════════════╣
+║  Hotkeys:                                                    ║
+║    Ctrl + Shift + Up     →  Volume Up                        ║
+║    Ctrl + Shift + Down   →  Volume Down                      ║
+║    Ctrl + Shift + M      →  Mute / Unmute                    ║
+║    Ctrl + Shift + 0      →  Set to 0dB (unity gain)          ║
+║    Ctrl + Shift + Q      →  Quit                             ║
+╚══════════════════════════════════════════════════════════════╝
+""")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Control TotalMix main volume via OSC",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python totalmix_volume_controller.py --ip 192.168.1.100
+  python totalmix_volume_controller.py --ip 192.168.1.100 --port 7001 --step 0.01
+
+TotalMix Setup:
+  1. Open TotalMix FX on the host computer
+  2. Go to Options → Settings → OSC tab
+  3. Enable OSC Control
+  4. Set Remote Controller to 1
+  5. Set Incoming Port (default 7001)
+  6. Check "In Use"
+        """
+    )
+    
+    parser.add_argument(
+        "--ip", "-i",
+        required=True,
+        help="IP address of the computer running TotalMix"
+    )
+    parser.add_argument(
+        "--port", "-p",
+        type=int,
+        default=7001,
+        help="OSC port (default: 7001)"
+    )
+    parser.add_argument(
+        "--step", "-s",
+        type=float,
+        default=0.02,
+        help="Volume step size, 0.01-0.1 (default: 0.02, ~1dB)"
+    )
+    
+    args = parser.parse_args()
+    
+    print_banner()
+    print(f"Connecting to TotalMix at {args.ip}:{args.port}...")
+    
+    try:
+        controller = TotalMixController(
+            ip=args.ip,
+            port=args.port,
+            step=args.step
+        )
+    except Exception as e:
+        print(f"✗ Failed to connect: {e}")
+        sys.exit(1)
+    
+    # Register hotkeys
+    keyboard.add_hotkey("ctrl+shift+up", controller.volume_up)
+    keyboard.add_hotkey("ctrl+shift+down", controller.volume_down)
+    keyboard.add_hotkey("ctrl+shift+m", controller.toggle_mute)
+    keyboard.add_hotkey("ctrl+shift+0", controller.set_unity_gain)
+    keyboard.add_hotkey("ctrl+shift+q", controller.stop)
+    
+    print("\n✓ Hotkeys registered. Press Ctrl+Shift+Q to quit.\n")
+    print("Waiting for input...\n")
+    
+    # Keep running until quit
+    try:
+        while controller.running:
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        pass
+    
+    print("\n\nGoodbye!")
+    keyboard.unhook_all()
+
+
+if __name__ == "__main__":
+    main()
