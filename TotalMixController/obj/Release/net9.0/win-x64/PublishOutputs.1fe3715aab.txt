@@ -1,0 +1,2 @@
+C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixController\bin\Release\net9.0\win-x64\publish\TotalMixController.pdb
+C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixController\bin\Release\net9.0\win-x64\publish\TotalMixController.exe

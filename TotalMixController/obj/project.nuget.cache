@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "S8q8eoOVuN4=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\piskop\\Documents\\Antigravity\\TotalMix\\TotalMixController\\TotalMixController.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\piskop\\.nuget\\packages\\microsoft.net.illink.tasks\\9.0.11\\microsoft.net.illink.tasks.9.0.11.nupkg.sha512",
+    "C:\\Users\\piskop\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\9.0.11\\microsoft.netcore.app.runtime.win-x64.9.0.11.nupkg.sha512",
+    "C:\\Users\\piskop\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\9.0.11\\microsoft.windowsdesktop.app.runtime.win-x64.9.0.11.nupkg.sha512",
+    "C:\\Users\\piskop\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\9.0.11\\microsoft.aspnetcore.app.runtime.win-x64.9.0.11.nupkg.sha512"
+  ],
+  "logs": []
+}
