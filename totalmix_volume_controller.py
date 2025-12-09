@@ -58,7 +58,7 @@ class TotalMixController:
     MIN_VOLUME = 0.0
     MAX_VOLUME = 1.0
     
-    def __init__(self, ip: str, port: int = 7009, step: float = 0.02):
+    def __init__(self, ip: str, port: int = 7009, step: float = 0.02, fader: int = 4):
         """
         Initialize the TotalMix controller.
         
@@ -73,10 +73,13 @@ class TotalMixController:
         self.current_volume = 0.5  # Start at middle, will be updated
         self.is_muted = False
         self.running = True
+        self.fader = fader
+        self.volume_address = f"/1/volume{fader}"
         
         # Create OSC client
         self.client = udp_client.SimpleUDPClient(ip, port)
         print(f"✓ Connected to TotalMix at {ip}:{port}")
+        print(f"✓ Controlling fader {fader} (address: {self.volume_address})")
         
         # Select the output bus on startup
         self._select_output_bus()
@@ -94,7 +97,7 @@ class TotalMixController:
         # Send to both addresses for maximum compatibility
         # First ensure output bus is selected, then send volume
         self.client.send_message(self.BUS_OUTPUT, 1.0)
-        self.client.send_message(self.VOLUME_1, float(value))
+        self.client.send_message(self.volume_address, float(value))
         # Also try the direct master volume address
         self.client.send_message(self.MASTER_VOLUME, float(value))
         
@@ -187,6 +190,12 @@ TotalMix Setup:
         default=0.02,
         help="Volume step size, 0.01-0.1 (default: 0.02, ~1dB)"
     )
+    parser.add_argument(
+        "--fader", "-f",
+        type=int,
+        default=4,
+        help="Output fader number, 1-8 (default: 4 for PH 7/8)"
+    )
     
     args = parser.parse_args()
     
@@ -197,7 +206,8 @@ TotalMix Setup:
         controller = TotalMixController(
             ip=args.ip,
             port=args.port,
-            step=args.step
+            step=args.step,
+            fader=args.fader
         )
     except Exception as e:
         print(f"✗ Failed to connect: {e}")
