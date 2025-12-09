@@ -59,7 +59,7 @@ class TotalMixController:
     MAX_VOLUME = 1.0
     
     def __init__(self, ip: str, port: int = 7001, receive_port: int = 9001, 
-                 step: float = 0.02, fader: int = 4):
+                 step: float = 0.02, faders: list = None):
         """
         Initialize the TotalMix controller.
         
@@ -76,15 +76,15 @@ class TotalMixController:
         self.current_volume = 0.5  # Start at middle, will be updated
         self.is_muted = False
         self.running = True
-        self.fader = fader
-        self.volume_address = f"/1/volume{fader}"
+        self.faders = faders if faders else [1, 2, 3, 4]  # Default: all 4 analog stereo outputs
+        self.volume_addresses = [f"/1/volume{f}" for f in self.faders]
         self.received_feedback = False
         
         # Create OSC client (note: UDP is connectionless, no actual connection is made)
         self.client = udp_client.SimpleUDPClient(ip, port)
         print(f"→ Sending OSC to {ip}:{port}")
         print(f"→ Listening for feedback on port {receive_port}")
-        print(f"→ Controlling fader {fader} (address: {self.volume_address})")
+        print(f"→ Controlling faders: {self.faders} (all analog outputs)")
         
         # Start listener thread for feedback from TotalMix
         self._start_listener()
@@ -99,7 +99,7 @@ class TotalMixController:
             print("\n✓ Received feedback from TotalMix - connection verified!")
         
         # Update our volume if TotalMix sends it
-        if address == self.volume_address and args:
+        if address in self.volume_addresses and args:
             self.current_volume = float(args[0])
             
     def _start_listener(self) -> None:
@@ -129,9 +129,10 @@ class TotalMixController:
         self.current_volume = value
         
         # Send to both addresses for maximum compatibility
-        # First ensure output bus is selected, then send volume
+        # First ensure output bus is selected, then send volume to ALL faders
         self.client.send_message(self.BUS_OUTPUT, 1.0)
-        self.client.send_message(self.volume_address, float(value))
+        for addr in self.volume_addresses:
+            self.client.send_message(addr, float(value))
         # Also try the direct master volume address
         self.client.send_message(self.MASTER_VOLUME, float(value))
         
@@ -225,10 +226,10 @@ TotalMix Setup:
         help="Volume step size, 0.01-0.1 (default: 0.02, ~1dB)"
     )
     parser.add_argument(
-        "--fader", "-f",
-        type=int,
-        default=4,
-        help="Output fader number, 1-8 (default: 4 for PH 7/8)"
+        "--faders", "-f",
+        type=str,
+        default="1,2,3,4",
+        help="Output fader numbers, comma-separated (default: '1,2,3,4' for all analog outputs)"
     )
     
     args = parser.parse_args()
@@ -236,12 +237,15 @@ TotalMix Setup:
     print_banner()
     print(f"Connecting to TotalMix at {args.ip}:{args.port}...")
     
+    # Parse faders from comma-separated string
+    faders_list = [int(f.strip()) for f in args.faders.split(',')]
+    
     try:
         controller = TotalMixController(
             ip=args.ip,
             port=args.port,
             step=args.step,
-            fader=args.fader
+            faders=faders_list
         )
     except Exception as e:
         print(f"✗ Failed to connect: {e}")
