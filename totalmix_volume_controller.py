@@ -55,7 +55,7 @@ class TotalMixController:
     MIN_VOLUME = 0.0
     MAX_VOLUME = 1.0
     
-    def __init__(self, ip: str, port: int = 7001, step: float = 0.02):
+    def __init__(self, ip: str, port: int = 7009, step: float = 0.02):
         """
         Initialize the TotalMix controller.
         
@@ -161,7 +161,7 @@ TotalMix Setup:
     parser.add_argument(
         "--port", "-p",
         type=int,
-        default=7001,
+        default=7009,
         help="OSC port (default: 7001)"
     )
     parser.add_argument(

@@ -21,11 +21,11 @@ pip install python-osc keyboard
 2. Go to **Options → Settings → OSC** tab
 3. Enable **OSC Control**
 4. Set **Remote Controller** to `1`
-5. Set **Incoming Port** to `7001` (or your preferred port)
+5. Set **Incoming Port** to `7009` (or your preferred port)
 6. Check **"In Use"**
 7. Note the IP address of this computer (e.g., `192.168.1.100`)
 
-Also ensure your Windows Firewall allows incoming UDP connections on port 7001.
+Also ensure your Windows Firewall allows incoming UDP connections on port 7009.
 
 ## Usage
 
@@ -34,7 +34,7 @@ Also ensure your Windows Firewall allows incoming UDP connections on port 7001.
 python totalmix_volume_controller.py --ip 192.168.1.100
 
 # Custom port
-python totalmix_volume_controller.py --ip 192.168.1.100 --port 7001
+python totalmix_volume_controller.py --ip 192.168.1.100 --port 7009
 
 # Smaller volume steps (finer control)
 python totalmix_volume_controller.py --ip 192.168.1.100 --step 0.01
@@ -55,7 +55,7 @@ python totalmix_volume_controller.py --ip 192.168.1.100 --step 0.01
 ### No response from TotalMix
 - Verify the IP address is correct
 - Check that OSC is enabled in TotalMix settings
-- Ensure port 7001 is open in Windows Firewall on the TotalMix computer
+- Ensure port 7009 is open in Windows Firewall on the TotalMix computer
 - Try using `127.0.0.1` if testing on the same machine
 
 ### "Permission denied" or hotkeys not working
