@@ -76,7 +76,7 @@ class TotalMixController:
         self.current_volume = 0.5  # Start at middle, will be updated
         self.is_muted = False
         self.running = True
-        self.faders = faders if faders else [1, 2, 3, 4]  # Default: all 4 analog stereo outputs
+        self.faders = faders if faders else [1, 2, 3, 4, 5, 6]  # Default: all 6 analog stereo outputs
         self.volume_addresses = [f"/1/volume{f}" for f in self.faders]
         self.received_feedback = False
         
@@ -228,8 +228,8 @@ TotalMix Setup:
     parser.add_argument(
         "--faders", "-f",
         type=str,
-        default="1,2,3,4",
-        help="Output fader numbers, comma-separated (default: '1,2,3,4' for all analog outputs)"
+        default="1,2,3,4,5,6",
+        help="Output fader numbers, comma-separated (default: '1,2,3,4,5,6' for all analog outputs)"
     )
     
     args = parser.parse_args()
