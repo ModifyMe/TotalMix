@@ -1,9 +1,10 @@
-# pydms Offline Installation Package
+# Offline Installation Package (pydms + pyads)
 
-This folder contains pydms and all its dependencies for offline installation.
+This folder contains pydms, pyads and all their dependencies for offline installation.
 
 ## Contents
 - `pydms-0.0.1.7-py3-none-any.whl` - pydms package
+- `pyads-3.5.0.tar.gz` - pyads package
 - `fire-0.7.1-py3-none-any.whl` - dependency
 - `termcolor-3.2.0-py3-none-any.whl` - dependency
 - `install.bat` - Windows install script
@@ -12,16 +13,16 @@ This folder contains pydms and all its dependencies for offline installation.
 ## Installation
 
 ### Windows
-1. Copy this entire `pydms_offline` folder to the offline machine
+1. Copy this entire folder to the offline machine
 2. Open a command prompt in this folder
 3. Run: `install.bat`
 
 ### Linux/Mac
-1. Copy this entire `pydms_offline` folder to the offline machine
+1. Copy this entire folder to the offline machine
 2. Open a terminal in this folder
 3. Run: `chmod +x install.sh && ./install.sh`
 
 ### Manual Installation
 ```bash
-pip install --no-index --find-links=. pydms
+pip install --no-index --find-links=. pydms pyads
 ```

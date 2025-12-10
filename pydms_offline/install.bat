@@ -1,6 +1,6 @@
 @echo off
-echo Installing pydms from offline packages...
-pip install --no-index --find-links=. pydms
+echo Installing pydms and pyads from offline packages...
+pip install --no-index --find-links=. pydms pyads
 echo.
 if %ERRORLEVEL% EQU 0 (
     echo Installation complete!

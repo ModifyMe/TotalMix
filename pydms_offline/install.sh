@@ -1,6 +1,6 @@
 #!/bin/bash
-echo "Installing pydms from offline packages..."
-pip install --no-index --find-links=. pydms
+echo "Installing pydms and pyads from offline packages..."
+pip install --no-index --find-links=. pydms pyads
 
 if [ $? -eq 0 ]; then
     echo "Installation complete!"
