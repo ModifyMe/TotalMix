@@ -220,7 +220,7 @@ def print_banner():
 ║    Ctrl + Shift + Up     →  Volume Up                        ║
 ║    Ctrl + Shift + Down   →  Volume Down                      ║
 ║    Ctrl + Shift + M      →  Mute / Unmute                    ║
-║    Ctrl + Shift + 0      →  Set to 0dB (unity gain)          ║
+║    Ctrl + Shift + R      →  Reset to 0dB (unity gain)        ║
 ║    Ctrl + Shift + Q      →  Quit                             ║
 ╚══════════════════════════════════════════════════════════════╝
 """)
@@ -292,8 +292,7 @@ TotalMix Setup:
     keyboard.add_hotkey("ctrl+shift+up", controller.volume_up)
     keyboard.add_hotkey("ctrl+shift+down", controller.volume_down)
     keyboard.add_hotkey("ctrl+shift+m", controller.toggle_mute)
-    keyboard.add_hotkey("ctrl+shift+0", controller.set_unity_gain)  # Top row 0
-    keyboard.add_hotkey("ctrl+shift+num 0", controller.set_unity_gain)  # Numpad 0
+    keyboard.add_hotkey("ctrl+shift+r", controller.set_unity_gain)  # R for Reset to 0dB
     keyboard.add_hotkey("ctrl+shift+q", controller.stop)
     
     print("\n✓ Hotkeys registered. Press Ctrl+Shift+Q to quit.\n")

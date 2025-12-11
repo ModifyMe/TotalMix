@@ -147,15 +147,36 @@ namespace TotalMixController
         public void ToggleMute()
         {
             _isMuted = !_isMuted;
-            _oscClient.Send(MAIN_MUTE, _isMuted ? 1.0f : 0.0f);
+            float muteValue = _isMuted ? 1.0f : 0.0f;
+            
+            // Select output bus first
+            _oscClient.Send(BUS_OUTPUT, 1.0f);
+            
+            // Mute each fader - format: /1/mute/1/{channel}
+            foreach (int fader in _faders)
+            {
+                string muteAddress = $"/1/mute/1/{fader}";
+                _oscClient.Send(muteAddress, muteValue);
+            }
+            
+            // Also try main mute for compatibility
+            _oscClient.Send(MAIN_MUTE, muteValue);
+            
             string status = _isMuted ? "🔇 MUTED" : "🔊 UNMUTED";
             Console.Write($"\r{status}                                          ");
         }
 
         public void SetUnityGain()
         {
+            Console.WriteLine("\n→ Setting to 0dB unity gain...");
+            
+            // Try mainRecall first
+            _oscClient.Send("/1/mainRecall", 1.0f);
+            
+            // Also directly set volume
             SetVolume(_unityGain);
-            Console.Write(" [0dB]");
+            
+            Console.Write("\r🔊 Volume set to 0dB (unity gain)                         ");
         }
 
         public float CurrentVolume => _currentVolume;
@@ -212,7 +233,7 @@ namespace TotalMixController
         private const uint VK_UP = 0x26;
         private const uint VK_DOWN = 0x28;
         private const uint VK_M = 0x4D;
-        private const uint VK_0 = 0x30;
+        private const uint VK_R = 0x52;  // R for Reset
         private const uint VK_Q = 0x51;
 
         private const int WM_HOTKEY = 0x0312;
@@ -274,7 +295,7 @@ namespace TotalMixController
             RegisterHotKey(IntPtr.Zero, HOTKEY_VOLUME_UP, mods, VK_UP);
             RegisterHotKey(IntPtr.Zero, HOTKEY_VOLUME_DOWN, mods, VK_DOWN);
             RegisterHotKey(IntPtr.Zero, HOTKEY_MUTE, mods, VK_M);
-            RegisterHotKey(IntPtr.Zero, HOTKEY_UNITY, mods, VK_0);
+            RegisterHotKey(IntPtr.Zero, HOTKEY_UNITY, mods, VK_R);
             RegisterHotKey(IntPtr.Zero, HOTKEY_QUIT, mods, VK_Q);
 
             Console.WriteLine("\n✓ Hotkeys registered. Press Ctrl+Shift+Q to quit.\n");
@@ -327,7 +348,7 @@ namespace TotalMixController
 ║    Ctrl + Shift + Up     →  Volume Up                        ║
 ║    Ctrl + Shift + Down   →  Volume Down                      ║
 ║    Ctrl + Shift + M      →  Mute / Unmute                    ║
-║    Ctrl + Shift + 0      →  Set to 0dB (unity gain)          ║
+║    Ctrl + Shift + R      →  Reset to 0dB (unity gain)        ║
 ║    Ctrl + Shift + Q      →  Quit                             ║
 ╚══════════════════════════════════════════════════════════════╝
 ");
