@@ -194,13 +194,16 @@ class TotalMixController:
         print(f"\r{status}                                          ", end="", flush=True)
         
     def set_unity_gain(self) -> None:
-        """Set volume to 0dB (unity gain) using TotalMix's recall function."""
-        # Use TotalMix's mainRecall command to recall default output volume (0dB)
+        """Set volume to 0dB (unity gain)."""
+        print("\n→ Setting to 0dB unity gain...")
+        
+        # Try the mainRecall command first
         self.client.send_message("/1/mainRecall", 1.0)
         
-        # Also set our internal tracking to unity gain
-        self.current_volume = self.UNITY_GAIN
-        print("\r🔊 Volume recalled to 0dB (unity gain)                    ", end="", flush=True)
+        # Also directly set volume to unity gain value
+        self.set_volume(self.UNITY_GAIN)
+        
+        print("\r🔊 Volume set to 0dB (unity gain)                         ", end="", flush=True)
         
     def stop(self) -> None:
         """Stop the controller."""
@@ -289,7 +292,8 @@ TotalMix Setup:
     keyboard.add_hotkey("ctrl+shift+up", controller.volume_up)
     keyboard.add_hotkey("ctrl+shift+down", controller.volume_down)
     keyboard.add_hotkey("ctrl+shift+m", controller.toggle_mute)
-    keyboard.add_hotkey("ctrl+shift+0", controller.set_unity_gain)
+    keyboard.add_hotkey("ctrl+shift+0", controller.set_unity_gain)  # Top row 0
+    keyboard.add_hotkey("ctrl+shift+num 0", controller.set_unity_gain)  # Numpad 0
     keyboard.add_hotkey("ctrl+shift+q", controller.stop)
     
     print("\n✓ Hotkeys registered. Press Ctrl+Shift+Q to quit.\n")
