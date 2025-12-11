@@ -1,0 +1,12 @@
+C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixLib\bin\Release\net9.0\TotalMixLib.deps.json
+C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixLib\bin\Release\net9.0\TotalMixLib.dll
+C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixLib\bin\Release\net9.0\TotalMixLib.pdb
+C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixLib\obj\Release\net9.0\TotalMixLib.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixLib\obj\Release\net9.0\TotalMixLib.AssemblyInfoInputs.cache
+C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixLib\obj\Release\net9.0\TotalMixLib.AssemblyInfo.cs
+C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixLib\obj\Release\net9.0\TotalMixLib.csproj.CoreCompileInputs.cache
+C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixLib\obj\Release\net9.0\TotalMixLib.sourcelink.json
+C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixLib\obj\Release\net9.0\TotalMixLib.dll
+C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixLib\obj\Release\net9.0\refint\TotalMixLib.dll
+C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixLib\obj\Release\net9.0\TotalMixLib.pdb
+C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixLib\obj\Release\net9.0\ref\TotalMixLib.dll

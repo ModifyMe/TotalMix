@@ -10,6 +10,7 @@
       "TotalMixController/1.0.0": {
         "dependencies": {
           "Microsoft.NET.ILLink.Tasks": "9.0.11",
+          "TotalMixLib": "1.0.0",
           "runtimepack.Microsoft.NETCore.App.Runtime.win-x64": "9.0.11"
         },
         "runtime": {
@@ -696,7 +697,15 @@
           }
         }
       },
-      "Microsoft.NET.ILLink.Tasks/9.0.11": {}
+      "Microsoft.NET.ILLink.Tasks/9.0.11": {},
+      "TotalMixLib/1.0.0": {
+        "runtime": {
+          "TotalMixLib.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
     }
   },
   "libraries": {
@@ -716,6 +725,11 @@
       "sha512": "sha512-vvB9rtDmWaXgYkViT00KORBVmA3pcYsHlgd9vOPqL9sf5bKy3rvLMF1+sI1uUfVj28S3itirHlHmX5/kcpZKNw==",
       "path": "microsoft.net.illink.tasks/9.0.11",
       "hashPath": "microsoft.net.illink.tasks.9.0.11.nupkg.sha512"
+    },
+    "TotalMixLib/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
     }
   },
   "runtimes": {

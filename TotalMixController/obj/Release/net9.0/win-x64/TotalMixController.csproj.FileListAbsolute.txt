@@ -198,3 +198,6 @@ C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixController\obj\Release\ne
 C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixController\obj\Release\net9.0\win-x64\TotalMixController.pdb
 C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixController\obj\Release\net9.0\win-x64\TotalMixController.genruntimeconfig.cache
 C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixController\obj\Release\net9.0\win-x64\ref\TotalMixController.dll
+C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixController\bin\Release\net9.0\win-x64\TotalMixLib.dll
+C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixController\bin\Release\net9.0\win-x64\TotalMixLib.pdb
+C:\Users\piskop\Documents\Antigravity\TotalMix\TotalMixController\obj\Release\net9.0\win-x64\TotalMixController.csproj.AssemblyReference.cache

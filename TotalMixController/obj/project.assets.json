@@ -7,6 +7,16 @@
         "build": {
           "build/Microsoft.NET.ILLink.Tasks.props": {}
         }
+      },
+      "TotalMixLib/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/TotalMixLib.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/TotalMixLib.dll": {}
+        }
       }
     },
     "net9.0/win-x64": {
@@ -14,6 +24,16 @@
         "type": "package",
         "build": {
           "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
+      "TotalMixLib/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/TotalMixLib.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/TotalMixLib.dll": {}
         }
       }
     }
@@ -69,11 +89,17 @@
         "tools/net9.0/illink.runtimeconfig.json",
         "useSharedDesignerContext.txt"
       ]
+    },
+    "TotalMixLib/1.0.0": {
+      "type": "project",
+      "path": "../TotalMixLib/TotalMixLib.csproj",
+      "msbuildProject": "../TotalMixLib/TotalMixLib.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net9.0": [
-      "Microsoft.NET.ILLink.Tasks >= 9.0.11"
+      "Microsoft.NET.ILLink.Tasks >= 9.0.11",
+      "TotalMixLib >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -100,7 +126,11 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\Users\\piskop\\Documents\\Antigravity\\TotalMix\\TotalMixLib\\TotalMixLib.csproj": {
+              "projectPath": "C:\\Users\\piskop\\Documents\\Antigravity\\TotalMix\\TotalMixLib\\TotalMixLib.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
