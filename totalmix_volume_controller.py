@@ -73,7 +73,7 @@ class TotalMixController:
         self.port = port
         self.receive_port = receive_port
         self.step = step
-        self.current_volume = 0.5  # Start at middle, will be updated
+        self.current_volume = None  # Will be set from TotalMix feedback or first adjustment
         self.is_muted = False
         self.running = True
         self.faders = faders if faders else [1, 2, 3, 4, 5, 6]  # Default: all 6 analog stereo outputs
@@ -91,6 +91,24 @@ class TotalMixController:
         
         # Select the output bus on startup
         self._select_output_bus()
+        
+        # Request current state from TotalMix
+        # Sending /1/refresh or touching faders triggers TotalMix to send current values
+        print("→ Requesting current volume from TotalMix...")
+        self.client.send_message("/1/refresh", 1.0)  # Request full state refresh
+        time.sleep(0.3)
+        
+        # If no feedback, try sending a "query" by selecting the bus again
+        if self.current_volume is None:
+            self.client.send_message(self.BUS_OUTPUT, 1.0)
+            time.sleep(0.3)
+        
+        if self.current_volume is None:
+            print("⚠ No feedback received - starting at 0dB (unity gain)")
+            print("  Tip: Check TotalMix OSC 'IP or Host Name' is set to YOUR computer's IP")
+            self.current_volume = self.UNITY_GAIN
+        else:
+            print(f"✓ Synced with TotalMix - current volume: {self.current_volume:.1%}")
         
     def _handle_osc_feedback(self, address: str, *args) -> None:
         """Handle incoming OSC messages from TotalMix."""
@@ -157,9 +175,21 @@ class TotalMixController:
         self.set_volume(self.current_volume - self.step)
         
     def toggle_mute(self) -> None:
-        """Toggle mute on/off."""
+        """Toggle mute on/off for all controlled faders."""
         self.is_muted = not self.is_muted
-        self.client.send_message(self.MASTER_MUTE, 1.0 if self.is_muted else 0.0)
+        mute_value = 1.0 if self.is_muted else 0.0
+        
+        # Select output bus first
+        self.client.send_message(self.BUS_OUTPUT, 1.0)
+        
+        # Mute each fader - format: /1/mute/1/{channel}
+        for fader in self.faders:
+            mute_address = f"/1/mute/1/{fader}"
+            self.client.send_message(mute_address, mute_value)
+        
+        # Also try the main mute for compatibility
+        self.client.send_message(self.MASTER_MUTE, mute_value)
+        
         status = "🔇 MUTED" if self.is_muted else "🔊 UNMUTED"
         print(f"\r{status}                                          ", end="", flush=True)
         
