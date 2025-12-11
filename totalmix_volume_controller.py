@@ -194,9 +194,13 @@ class TotalMixController:
         print(f"\r{status}                                          ", end="", flush=True)
         
     def set_unity_gain(self) -> None:
-        """Set volume to 0dB (unity gain)."""
-        self.set_volume(self.UNITY_GAIN)
-        print(" [0dB]", end="", flush=True)
+        """Set volume to 0dB (unity gain) using TotalMix's recall function."""
+        # Use TotalMix's mainRecall command to recall default output volume (0dB)
+        self.client.send_message("/1/mainRecall", 1.0)
+        
+        # Also set our internal tracking to unity gain
+        self.current_volume = self.UNITY_GAIN
+        print("\r🔊 Volume recalled to 0dB (unity gain)                    ", end="", flush=True)
         
     def stop(self) -> None:
         """Stop the controller."""
