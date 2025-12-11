@@ -79,27 +79,128 @@ namespace TotalMixController
     {
         private readonly OscClient _oscClient;
         private readonly int[] _faders;
-        private float _currentVolume = 0.5f;
+        private float? _currentVolume = null;  // Will be set from TotalMix feedback
         private bool _isMuted = false;
         private readonly float _step;
         private readonly float _unityGain = 0.7197f;
+        private readonly int _receivePort;
+        private UdpClient? _listener;
+        private bool _receivedFeedback = false;
+        private readonly string[] _volumeAddresses;
 
         // OSC addresses
         private const string BUS_OUTPUT = "/1/busOutput";
         private const string MASTER_VOLUME = "/1/mastervolume";
         private const string MAIN_MUTE = "/1/mainMute";
 
-        public TotalMixController(string ipAddress, int port = 7001, float step = 0.02f, int[]? faders = null)
+        public TotalMixController(string ipAddress, int port = 7001, int receivePort = 9001, float step = 0.02f, int[]? faders = null)
         {
             _oscClient = new OscClient(ipAddress, port);
             _step = step;
             _faders = faders ?? new int[] { 1, 2, 3, 4, 5, 6 };
+            _receivePort = receivePort;
+            _volumeAddresses = _faders.Select(f => $"/1/volume{f}").ToArray();
 
             Console.WriteLine($"→ Sending OSC to {ipAddress}:{port}");
+            Console.WriteLine($"→ Listening for feedback on port {receivePort}");
             Console.WriteLine($"→ Controlling faders: [{string.Join(", ", _faders)}]");
 
+            // Start listener for feedback
+            StartListener();
+            
             // Select output bus on startup
             SelectOutputBus();
+            
+            // Request current state from TotalMix
+            Console.WriteLine("→ Requesting current volume from TotalMix...");
+            _oscClient.Send("/1/refresh", 1.0f);
+            Thread.Sleep(300);
+            
+            if (_currentVolume == null)
+            {
+                _oscClient.Send(BUS_OUTPUT, 1.0f);
+                Thread.Sleep(300);
+            }
+            
+            if (_currentVolume == null)
+            {
+                Console.WriteLine("⚠ No feedback received - starting at 0dB (unity gain)");
+                Console.WriteLine("  Tip: Check TotalMix OSC 'IP or Host Name' is set to YOUR computer's IP");
+                _currentVolume = _unityGain;
+            }
+            else
+            {
+                Console.WriteLine($"✓ Synced with TotalMix - current volume: {_currentVolume:P0}");
+            }
+        }
+        
+        private void StartListener()
+        {
+            try
+            {
+                _listener = new UdpClient(_receivePort);
+                Console.WriteLine($"✓ Listening on port {_receivePort}");
+                
+                // Start async receive
+                Task.Run(() => ListenForFeedback());
+            }
+            catch (SocketException ex)
+            {
+                Console.WriteLine($"⚠ Could not listen on port {_receivePort}: {ex.Message}");
+            }
+        }
+        
+        private void ListenForFeedback()
+        {
+            try
+            {
+                while (_listener != null)
+                {
+                    IPEndPoint? remoteEP = null;
+                    byte[] data = _listener.Receive(ref remoteEP);
+                    ProcessOscMessage(data);
+                }
+            }
+            catch (SocketException)
+            {
+                // Socket closed, exit gracefully
+            }
+        }
+        
+        private void ProcessOscMessage(byte[] data)
+        {
+            if (data.Length < 8) return;
+            
+            // Parse OSC address (null-terminated string)
+            int nullPos = Array.IndexOf(data, (byte)0);
+            if (nullPos < 0) return;
+            
+            string address = Encoding.ASCII.GetString(data, 0, nullPos);
+            
+            if (!_receivedFeedback)
+            {
+                _receivedFeedback = true;
+                Console.WriteLine("\n✓ Received feedback from TotalMix - connection verified!");
+            }
+            
+            // Check if this is a volume address we care about
+            if (_volumeAddresses.Contains(address))
+            {
+                // Find the float value (skip address + padding + type tag)
+                int paddedAddrLen = (nullPos + 4) & ~3;
+                int floatPos = paddedAddrLen + 4;  // Skip type tag
+                
+                if (floatPos + 4 <= data.Length)
+                {
+                    byte[] floatBytes = new byte[4];
+                    Array.Copy(data, floatPos, floatBytes, 0, 4);
+                    if (BitConverter.IsLittleEndian)
+                    {
+                        Array.Reverse(floatBytes);
+                    }
+                    _currentVolume = BitConverter.ToSingle(floatBytes, 0);
+                }
+            }
         }
 
         private void SelectOutputBus()
@@ -136,12 +237,12 @@ namespace TotalMixController
 
         public void VolumeUp()
         {
-            SetVolume(_currentVolume + _step);
+            SetVolume((_currentVolume ?? _unityGain) + _step);
         }
 
         public void VolumeDown()
         {
-            SetVolume(_currentVolume - _step);
+            SetVolume((_currentVolume ?? _unityGain) - _step);
         }
 
         public void ToggleMute()
@@ -179,10 +280,12 @@ namespace TotalMixController
             Console.Write("\r🔊 Volume set to 0dB (unity gain)                         ");
         }
 
-        public float CurrentVolume => _currentVolume;
+        public float CurrentVolume => _currentVolume ?? _unityGain;
 
         public void Dispose()
         {
+            _listener?.Close();
+            _listener?.Dispose();
             _oscClient?.Dispose();
         }
     }
@@ -288,7 +391,7 @@ namespace TotalMixController
             PrintBanner();
             Console.WriteLine($"Connecting to TotalMix at {ipAddress}:{port}...\n");
 
-            using var controller = new TotalMixController(ipAddress, port, step, faders);
+            using var controller = new TotalMixController(ipAddress, port, 9001, step, faders);
 
             // Register hotkeys
             uint mods = MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT;

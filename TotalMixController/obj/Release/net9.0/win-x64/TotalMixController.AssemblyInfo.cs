@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TotalMixController")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1d90c1c49ee68aa041ab40b458f19bcd2b41c617")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3579ae38fb84a4671a8aae5460a16444d6d78609")]
 [assembly: System.Reflection.AssemblyProductAttribute("TotalMixController")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TotalMixController")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
